@@ -1,17 +1,37 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 import {Link} from "react-router-dom";
 import {useForm} from "react-hook-form"; 
+import firebase from "../../firebase";
+
 function RegisterPage(){
     const { register, watch, formState: { errors }, handleSubmit } = useForm();
-
+    const [errorFromSubmit, setErrorFromSubmit] = useState("");
+    const [loading, setLoading] = useState(false);
   console.log(watch("email"));
+  
 
+  const onSubmit = async (data) => {
+
+    try{
+      setLoading(true)
+      let createdUser = await firebase.auth().createUserWithEmailAndPassword(data.email, data.password);
+      console.log("createUser" + createdUser)
+      setLoading(false);
+    }catch(error){
+      setErrorFromSubmit(error.message)
+      setTimeout(() =>{
+        setErrorFromSubmit("");
+      }, 5000)
+    }
+    
+
+  }
     return(
         <div className="auth-wrapper">
             <div style={{textAlign:'center'}}>
                 <h3>Register</h3>
             </div>
-             <form >
+             <form onSubmit={handleSubmit(onSubmit)}>
                 <label>Email</label>
       <input name="email" type="email" {...register("email", { required: true, pattern: /^\S+@\S+$/i })}/>
       {errors.email && <p>This email field is required</p>}
@@ -34,7 +54,9 @@ function RegisterPage(){
       {/* errors will return when field validation fails  */}
       {/* {errors.exampleRequired && <p>This field is required</p>} */}
 
-      <input type="submit" />
+          {errorFromSubmit && 
+          <p>{setErrorFromSubmit}</p>}
+      <input type="submit" disabled={loading}/>
     </form>
     <Link style={{ color: 'gray', textDecoration: 'none' }} to="login">이미 아이디가 있다면... </Link>
         </div>
