@@ -2,20 +2,24 @@ import React, { useRef, useState } from "react";
 import {Link} from "react-router-dom";
 import {useForm} from "react-hook-form"; 
 import firebase from "../../firebase";
+import { getDatabase, ref, set } from "firebase/database";
+import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 
 function RegisterPage(){
     const { register, watch, formState: { errors }, handleSubmit } = useForm();
     const [errorFromSubmit, setErrorFromSubmit] = useState("");
     const [loading, setLoading] = useState(false);
-  console.log(watch("email"));
+  //console.log(watch("email"));
   
 
   const onSubmit = async (data) => {
 
     try{
       setLoading(true)
-      let createdUser = await firebase.auth().createUserWithEmailAndPassword(data.email, data.password);
+      const auth = getAuth();
+      let createdUser = await createUserWithEmailAndPassword(auth, data.email, data.password)
       console.log("createUser" + createdUser)
+      console.log("firebase"+firebase.auth())
       setLoading(false);
     }catch(error){
       setErrorFromSubmit(error.message)
@@ -54,8 +58,9 @@ function RegisterPage(){
       {/* errors will return when field validation fails  */}
       {/* {errors.exampleRequired && <p>This field is required</p>} */}
 
-          {errorFromSubmit && 
-          <p>{setErrorFromSubmit}</p>}
+      {errorFromSubmit &&
+                    <p>{errorFromSubmit}</p>
+                }
       <input type="submit" disabled={loading}/>
     </form>
     <Link style={{ color: 'gray', textDecoration: 'none' }} to="login">이미 아이디가 있다면... </Link>
